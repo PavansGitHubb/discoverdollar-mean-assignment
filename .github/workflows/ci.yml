@@ -1,35 +1,25 @@
-name: CI - Build & Test MEAN App
+build-frontend:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+    - name: Install Angular CLI
+      run: npm install -g @angular/cli
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
 
-    # ---------- Backend ----------
-    - name: Build Backend Docker Image
-      run: |
-        docker build -t backend-image ./backend
+    - name: Build Angular App
+      working-directory: ./frontend
+      run: ng build --configuration production
 
-    # ---------- Frontend ----------
     - name: Build Frontend Docker Image
-      run: |
-        docker build -t frontend-image ./frontend
-
-    # ---------- Docker Compose Build ----------
-    - name: Docker Compose Build
-      run: |
-        docker compose build
-
-    # ---------- Optional Tests ----------
-    - name: Run Tests (Skip if none)
-      run: echo "No tests added yet"
+      run: docker build -t frontend-image ./frontend
 
